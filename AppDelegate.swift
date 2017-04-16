@@ -13,17 +13,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     let statusItem = NSStatusBar.system().statusItem(withLength: -2)
     let popover = NSPopover()
+    var eventMonitor: EventMonitor?
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = NSImage(named: "StatusBarButtonImage")
             button.action = #selector(togglePopover(sender:))
         }
+        
         let viewControllerStoryboardId = "ViewController"
         let storyboardName = "Main"
         let storyboard = NSStoryboard(name: storyboardName, bundle: Bundle.main)
         let viewController = storyboard.instantiateController(withIdentifier: viewControllerStoryboardId) as! NSViewController
         popover.contentViewController = viewController
+        
+        eventMonitor = EventMonitor() { [unowned self] event in
+            if self.popover.isShown {
+                self.closePopover(sender: event)
+            }
+        }
+        eventMonitor?.start()
     }
 
     func showPopover(sender: AnyObject?) {
